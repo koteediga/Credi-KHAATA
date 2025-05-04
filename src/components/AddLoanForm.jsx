@@ -1,39 +1,80 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
-const AddLoanForm = () => {
-  const { register, handleSubmit, reset } = useForm();
-  const { id } = useParams();
-  const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    const newLoan = {
-      customerId: id,
-      amount: parseFloat(data.amount),
-      date: new Date().toISOString().split('T')[0]
-    };
+const AddLoanForm = ({ customerId, onSuccess }) => {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors }
+  } = useForm();
 
-    // Mock submission (API can be added later)
-    console.log('New loan submitted:', newLoan);
-    alert('Loan added successfully');
-    reset();
-    navigate(`/customer/${id}`);
+  const onSubmit = async (data) => {
+    try {
+      const response = await axios.post('/api/loans', {
+        ...data,
+        customerId,
+      });
+      toast.success('Loan added successfully');
+      reset();
+      if (onSuccess) onSuccess(); // Refresh list or close modal
+    } catch (error) {
+      toast.error('Failed to add loan');
+    }
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Add Loan for Customer #{id}</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <input 
-          {...register('amount', { required: true })} 
-          placeholder="Loan Amount" 
-          type="number" 
-          className="border p-2 block w-full" 
+    <form onSubmit={handleSubmit(onSubmit)} className="p-4 bg-white rounded shadow-md">
+      <div className="mb-2">
+        <label className="block">Loan Amount</label>
+        <input
+          {...register('amount', { required: 'Amount is required', valueAsNumber: true })}
+          type="number"
+          className="border p-2 w-full"
         />
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2">Add Loan</button>
-      </form>
-    </div>
+        {errors.amount && <span className="text-red-500">{errors.amount.message}</span>}
+      </div>
+
+      <div className="mb-2">
+        <label className="block">Interest Rate (%)</label>
+        <input
+          {...register('interestRate', { required: 'Interest rate is required', valueAsNumber: true })}
+          type="number"
+          className="border p-2 w-full"
+        />
+        {errors.interestRate && <span className="text-red-500">{errors.interestRate.message}</span>}
+      </div>
+
+      <div className="mb-2">
+        <label className="block">Duration (in months)</label>
+        <input
+          {...register('duration', { required: 'Duration is required', valueAsNumber: true })}
+          type="number"
+          className="border p-2 w-full"
+        />
+        {errors.duration && <span className="text-red-500">{errors.duration.message}</span>}
+      </div>
+
+      <div className="mb-2">
+        <label className="block">Start Date</label>
+        <input
+          {...register('startDate', { required: 'Start date is required' })}
+          type="date"
+          className="border p-2 w-full"
+        />
+        {errors.startDate && <span className="text-red-500">{errors.startDate.message}</span>}
+      </div>
+
+      <button
+        type="submit"
+        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+      >
+        Add Loan
+      </button>
+    </form>
   );
 };
 
