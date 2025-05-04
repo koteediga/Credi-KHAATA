@@ -1,26 +1,56 @@
-import React from 'react';
+// ExportPDF.js
 import { jsPDF } from 'jspdf';
 
-const ExportPDF = ({ customerData, loanData }) => {
-  const handleExport = () => {
-    const doc = new jsPDF();
+const ExportPDF = (customer) => {
+  const doc = new jsPDF();
 
-    doc.text('Customer Details:', 10, 10);
-    doc.text(`Name: ${customerData.name}`, 10, 20);
-    doc.text(`Email: ${customerData.email}`, 10, 30);
-    doc.text(`Contact: ${customerData.contact}`, 10, 40);
+  doc.setFontSize(16);
+  doc.text('Customer Details', 10, 10);
 
-    doc.text('Loan Details:', 10, 60);
-    doc.text(`Loan Amount: ${loanData.loanAmount}`, 10, 70);
-    doc.text(`Interest Rate: ${loanData.interestRate}%`, 10, 80);
-    doc.text(`Repayment Period: ${loanData.repaymentPeriod} months`, 10, 90);
+  doc.setFontSize(12);
+  doc.text(`Name: ${customer.name}`, 10, 20);
+  doc.text(`Customer ID: ${customer.id}`, 10, 30);
 
-    doc.save('customer_loan_details.pdf'); // Download PDF
-  };
+  // Loans
+  let y = 50;
+  doc.setFontSize(14);
+  doc.text('Loans:', 10, y);
+  y += 10;
+  customer.loans.forEach((loan, index) => {
+    doc.setFontSize(12);
+    doc.text(`• ₹${loan.amount} on ${loan.date}`, 10, y);
+    y += 10;
+  });
 
-  return (
-    <button onClick={handleExport} className="bg-green-500 text-white px-4 py-2">Export to PDF</button>
-  );
+  // Repayments
+  y += 10;
+  doc.setFontSize(14);
+  doc.text('Repayments:', 10, y);
+  y += 10;
+  customer.repayments.forEach((repay) => {
+    doc.setFontSize(12);
+    doc.text(`• ₹${repay.amount} on ${repay.date}`, 10, y);
+    y += 10;
+  });
+
+  // Totals
+  const totalLoan = customer.loans.reduce((acc, l) => acc + l.amount, 0);
+  const totalRepaid = customer.repayments.reduce((acc, r) => acc + r.amount, 0);
+  const balance = totalLoan - totalRepaid;
+
+  y += 10;
+  doc.setFontSize(14);
+  doc.text('Summary:', 10, y);
+  y += 10;
+  doc.setFontSize(12);
+  doc.text(`Total Loan: ₹${totalLoan}`, 10, y);
+  y += 10;
+  doc.text(`Total Repaid: ₹${totalRepaid}`, 10, y);
+  y += 10;
+  doc.text(`Balance: ₹${balance}`, 10, y);
+
+  // Save the file
+  doc.save('customer_details.pdf');
 };
 
 export default ExportPDF;
