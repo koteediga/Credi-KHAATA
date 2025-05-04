@@ -1,7 +1,8 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
+import ExportPDF from './ExportPDF';
 
-const CustomerDetail = () => {
+const CustomerDetails = () => {
   const { id } = useParams();
   const customer = {
     id,
@@ -45,8 +46,15 @@ const CustomerDetail = () => {
           ))}
         </ul>
       </div>
+      <button
+  onClick={() => ExportPDF(customer)}
+  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mt-2"
+>
+  Download PDF
+</button>
+
     </div>
   );
 };
 
-export default CustomerDetail;
+export default CustomerDetails;
